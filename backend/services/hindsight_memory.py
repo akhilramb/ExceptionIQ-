@@ -36,8 +36,6 @@ def _text(item: dict[str, Any]) -> str:
 
 
 def _from_text(text: str, label: str) -> str:
-    # Retained ExceptionIQ memories are deliberately human-readable, so this is
-    # a safe fallback when Hindsight recall/list does not return custom metadata.
     match = re.search(rf"{re.escape(label)}:\s*(.*?)(?=\.\s+[A-Z][A-Za-z ]+:|\.$|$)", text, re.IGNORECASE)
     return match.group(1).strip() if match else ""
 
@@ -94,18 +92,29 @@ def retain_case(case: dict[str, Any]) -> dict[str, Any]:
         return response.json()
 
 
-def recall_cases(vendor: str, problem_type: str, amount_difference: float, max_tokens: int = 1200) -> list[dict[str, Any]]:
-    """Retrieve ranked cases using Hindsight recall."""
-    query = (
-        "Find previous successful ExceptionIQ accounts-payable cases relevant to "
-        f"vendor {vendor}, exception type {problem_type}, amount difference {amount_difference}. "
-        "Prioritize same-vendor and same-problem experiences and their human-approved resolutions."
-    )
-    payload = {"query": query, "types": ["experience", "world", "observation"], "prefer_observations": True, "max_tokens": max_tokens}
+def _recall(query: str, max_tokens: int) -> list[dict[str, Any]]:
+    """Call Hindsight recall without imposing a local similarity algorithm."""
+    payload = {
+        "query": query,
+        "types": ["experience", "world", "observation"],
+        "prefer_observations": False,
+        "max_tokens": max_tokens,
+    }
     with httpx.Client(timeout=TIMEOUT) as client:
         response = client.post(_url("/memories/recall"), headers=_headers(), json=payload)
         response.raise_for_status()
-        raw = response.json().get("results", [])
+        return response.json().get("results", [])
+
+
+def recall_cases(vendor: str, problem_type: str, amount_difference: float, max_tokens: int = 1200) -> list[dict[str, Any]]:
+    """Retrieve previous cases using Hindsight recall, with a persistent-bank fallback.
+
+    The fallback does not invent similarity. It only selects exact vendor/problem
+    precedents already stored in Hindsight when Cloud recall has not yet surfaced
+    a newly retained fact (for example while indexing/consolidation is catching up).
+    """
+    query = f"{vendor} {problem_type}"
+    raw = _recall(query, max_tokens)
 
     cases = []
     for rank, item in enumerate(raw[:8], start=1):
@@ -116,12 +125,32 @@ def recall_cases(vendor: str, problem_type: str, amount_difference: float, max_t
             "rank": rank,
             "relevance_score": scores.get("final"),
             "similarity_score": round(float(semantic) * 100, 1) if semantic is not None else None,
+            "retrieval_method": "hindsight-recall",
         })
-        # Only surface usable ExceptionIQ precedents. Generic/malformed memory
-        # units should not appear as evidence for a financial recommendation.
         if case["vendor"] and case["problem_type"] and (case["solution"] or case["root_cause"]):
             cases.append(case)
-    return cases
+
+    if cases:
+        return cases
+
+    # Hindsight's list endpoint is still the same persistent memory layer. This
+    # exact metadata match is a safe fallback and intentionally has no fabricated
+    # similarity score.
+    vendor_key = vendor.strip().casefold()
+    problem_key = problem_type.strip().casefold()
+    exact = [
+        memory for memory in list_memories()
+        if memory.get("vendor", "").strip().casefold() == vendor_key
+        and memory.get("problem_type", "").strip().casefold() == problem_key
+    ]
+    for rank, case in enumerate(exact[:8], start=1):
+        case.update({
+            "rank": rank,
+            "relevance_score": None,
+            "similarity_score": None,
+            "retrieval_method": "hindsight-exact-memory-fallback",
+        })
+    return exact[:8]
 
 
 def list_memories() -> list[dict[str, Any]]:
@@ -135,7 +164,6 @@ def list_memories() -> list[dict[str, Any]]:
     seen = set()
     for item in raw:
         memory = _normalise(item)
-        # Hide unrelated/empty Hindsight units and collapse exact duplicates.
         if not memory["vendor"] or not memory["problem_type"] or not (memory["solution"] or memory["root_cause"]):
             continue
         key = (memory["vendor"].lower(), memory["problem_type"].lower(), memory["root_cause"].lower(), memory["solution"].lower(), memory["outcome"].lower())

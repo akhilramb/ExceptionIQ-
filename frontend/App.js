@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+const { useEffect, useMemo, useState } = React;
 
 const API_BASE='/api';
 const Icon=({name})=><span className="nav-icon" aria-hidden="true">{name}</span>;

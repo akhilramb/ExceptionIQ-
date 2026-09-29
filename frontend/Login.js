@@ -12,7 +12,7 @@
     const fillDemo=()=>{
       setUsername('you@example.com');
       setPassword('demo123');
-      setCustomerId('EXIQ-DEMO-001');
+      setCustomerId('EXIQ-001');
       setError('');
     };
 
@@ -27,7 +27,7 @@
     const submit=e=>{
       e.preventDefault();
       if(!username.trim()||!password.trim()||!customerId.trim()){
-        setError('Enter any email, any password, and any customer ID to continue. This is demo access only.');
+        setError('Enter your email, password, and customer ID to continue.');
         return;
       }
       setError('');
@@ -38,7 +38,7 @@
       },700);
     };
 
-    return <div className="demo-login-shell" role="dialog" aria-label="ExceptionIQ demo login">
+    return <div className="demo-login-shell" role="dialog" aria-label="ExceptionIQ login">
       <section className="demo-showcase" aria-label="ExceptionIQ overview">
         <div className="demo-brand"><span className="demo-brand-mark">IQ</span><span>ExceptionIQ</span></div>
         <div className="demo-hero">
@@ -62,27 +62,25 @@
 
       <section className="demo-auth-panel">
         <div className="demo-auth-inner">
-          <span className="demo-security-pill">🔓 Open Demo Workspace</span>
+          <span className="demo-security-pill">Workspace Access</span>
           <h2 className="demo-auth-title">Welcome back</h2>
-          <p className="demo-auth-subtitle">Enter any demo details to continue to the ExceptionIQ workspace. No real account is required.</p>
+          <p className="demo-auth-subtitle">Enter your login details to continue to the ExceptionIQ workspace.</p>
 
           <form onSubmit={submit}>
             {error&&<div className="demo-error" role="alert">{error}</div>}
-            <div className="demo-field"><label htmlFor="demo-user">Username / Work Email</label><div className="demo-input-wrap"><span className="demo-input-icon">✉</span><input id="demo-user" value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter any email address" autoComplete="off"/></div></div>
-            <div className="demo-field"><label htmlFor="demo-password">Password</label><div className="demo-input-wrap"><span className="demo-input-icon">⌑</span><input id="demo-password" type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter any password" autoComplete="off"/><button type="button" className="demo-password-toggle" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?'◉':'◌'}</button></div></div>
-            <div className="demo-field"><label htmlFor="demo-customer">Customer ID / Organization ID</label><div className="demo-input-wrap"><span className="demo-input-icon">▦</span><input id="demo-customer" value={customerId} onChange={e=>setCustomerId(e.target.value)} placeholder="Enter any customer ID" autoComplete="off"/></div></div>
+            <div className="demo-field"><label htmlFor="demo-user">Username / Work Email</label><div className="demo-input-wrap"><span className="demo-input-icon">✉</span><input id="demo-user" value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter your email address" autoComplete="off"/></div></div>
+            <div className="demo-field"><label htmlFor="demo-password">Password</label><div className="demo-input-wrap"><span className="demo-input-icon">⌑</span><input id="demo-password" type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" autoComplete="off"/><button type="button" className="demo-password-toggle" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?'◉':'◌'}</button></div></div>
+            <div className="demo-field"><label htmlFor="demo-customer">Customer ID / Organization ID</label><div className="demo-input-wrap"><span className="demo-input-icon">▦</span><input id="demo-customer" value={customerId} onChange={e=>setCustomerId(e.target.value)} placeholder="Enter your customer ID" autoComplete="off"/></div></div>
 
-            <div className="demo-form-meta"><label className="demo-check"><input type="checkbox" defaultChecked/>Remember me</label><button className="demo-link" type="button" onClick={()=>setError('This is an open demo workspace, so password recovery is not required.')}>Forgot password?</button></div>
+            <div className="demo-form-meta"><label className="demo-check"><input type="checkbox" defaultChecked/>Remember me</label><button className="demo-link" type="button" onClick={()=>setError('Password recovery is not available on this version.')}>Forgot password?</button></div>
 
             <div className="demo-login-actions"><button className="demo-signin" disabled={opening}>{opening?<span className="demo-opening">Opening workspace…</span>:'Sign In →'}</button><button className="demo-reset" type="button" onClick={reset}>Reset</button></div>
           </form>
 
           <div className="demo-credentials">
-            <div className="demo-credentials-head"><strong>Open demo access</strong><button type="button" className="demo-fill" onClick={fillDemo}>Fill sample details</button></div>
+            <div className="demo-credentials-head"><strong>Login details</strong><button type="button" className="demo-fill" onClick={fillDemo}>Fill login details</button></div>
             <div className="demo-cred-grid"><div className="demo-cred-row"><span>Email</span><code>Any email</code></div><div className="demo-cred-row"><span>Password</span><code>Any password</code></div><div className="demo-cred-row"><span>Customer ID</span><code>Any ID</code></div></div>
           </div>
-
-          <p className="demo-disclaimer"><span>ⓘ</span><span>This is a dummy login page for demonstration only. Any non-empty demo values will open the workspace. No credentials are authenticated or stored, and the existing ExceptionIQ backend and workflows remain unchanged.</span></p>
         </div>
       </section>
     </div>;

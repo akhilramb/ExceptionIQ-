@@ -1,115 +1,127 @@
 # ExceptionIQ
-AI-powered business exception management system with memory capabilities
 
-## Overview
-ExceptionIQ helps businesses solve unusual finance/business exceptions by remembering how similar problems were solved previously. The AI analyzes new exceptions against historical data to provide intelligent recommendations.
+ExceptionIQ is a financial exception investigation system that turns approved resolutions into reusable organizational memory. New invoice/PO exceptions are compared with historical cases, recommendations are grounded in that evidence, and a human decides whether to approve the resolution before it becomes new memory.
 
-## Demo Features
-1. **Dashboard** - View exception statistics and recent cases
-2. **New Exception** - Create new exceptions with auto-calculated differences
-3. **AI Investigation** - AI-powered analysis with suggestion of similar cases
-4. **Memory Explorer** - Browse all historical memories and solutions
-5. **Learning Timeline** - Visualize how the system improves over time
+## Core workflow
 
-## Technology Stack
-- **Frontend**: React + Inline JavaScript (Single HTML file)
-- **Backend**: Python FastAPI
-- **Database**: SQLite
-- **AI**: Rule-based recommendations (demo mode)
+1. Create an exception with vendor, invoice/PO amounts, type and context.
+2. ExceptionIQ calculates the variance and retrieves similar historical cases.
+3. The investigation ranks memories using vendor, problem type, amount proximity and successful outcomes.
+4. The UI shows the likely root cause, recommended action, evidence cases and confidence.
+5. A human reviews the evidence and approves the resolution.
+6. Approved resolutions are stored as new organizational memory and influence later cases.
 
-## Quick Start
+ExceptionIQ deliberately does **not** invent a precedent when no useful memory exists; it falls back to manual verification.
 
-### 1. Install Python Dependencies
+## Features
 
-Navigate to backend directory:
+- Responsive exception intelligence dashboard
+- Create and investigate invoice/PO exceptions
+- Evidence-ranked historical case retrieval
+- Confidence and evidence count for recommendations
+- Human-in-the-loop approval
+- Automatic learning from approved resolutions
+- Memory Explorer
+- Resolution and memory analytics
+- Health endpoint and API documentation
+- SQLite persistence with idempotent demo seeding
+- Automated backend tests with GitHub Actions
+- Environment-based runtime configuration
+
+## Technology
+
+- Frontend: React 18 loaded from CDN, JavaScript, CSS
+- Backend: Python, FastAPI, Pydantic
+- Persistence: SQLite
+- Memory layer: local Hindsight-compatible case store
+- Testing: pytest + FastAPI TestClient
+- CI: GitHub Actions
+
+The current core build uses deterministic, evidence-grounded recommendation logic. `OPENAI_API_KEY` is reserved in configuration for an optional provider integration; the project does not claim that a live external LLM or Hindsight SaaS service is active unless those integrations are explicitly configured.
+
+## Quick start
+
 ```bash
-cd ExceptionIQ/backend
-pip install -r requirements.txt
+git clone https://github.com/akhilramb/ExceptionIQ-.git
+cd ExceptionIQ-/backend
+python -m venv .venv
 ```
 
-### 2. Start the Backend Server
+Activate the virtual environment, then install dependencies:
 
 ```bash
-cd ExceptionIQ/backend
+pip install -r requirements.txt
 python main.py
 ```
 
-The server will start at `http://127.0.0.1:8000`
+Open `http://127.0.0.1:8000`.
 
-### 3. Open the Frontend
+FastAPI documentation is available at `http://127.0.0.1:8000/docs`.
 
-Open this URL in your browser:
+## Tests
+
+From `backend/`:
+
+```bash
+pytest -q
 ```
-http://127.0.0.1:8000
-```
 
-## Demo Data
+The repository also runs these tests in `.github/workflows/test.yml`.
 
-The system comes pre-loaded with 22 mock memories across 4 vendors:
-- **NovaTech Solutions** - Freight charge mismatches
-- **Bharat Logistics** - Missing GST/Unexpected charges
-- **Vertex Systems** - Duplicate invoices/Incorrect PO
-- **Deccan Supplies** - Partial invoices/Taxes mismatch
+## API
 
-## Demo Flow
+- `GET /api/health` — runtime health/provider status
+- `GET /api/exceptions` — list exceptions
+- `GET /api/exceptions/{id}` — exception details
+- `POST /api/exceptions` — create an exception
+- `PATCH /api/exceptions/{id}` — update an exception
+- `POST /api/exceptions/{id}/resolve` — approve/reject and optionally learn the resolution
+- `POST /api/investigate` — retrieve evidence and generate a grounded recommendation
+- `GET /api/memories` — list organizational memories
+- `POST /api/memories` — add a memory
+- `GET /api/analytics` — resolution, memory and vendor/type metrics
 
-1. Navigate to **"New Exception"**
-2. Fill in the exception details (try NovaTech Solutions)
-3. Click **"Investigate with AI"**
-4. See similar memories and AI recommendations
-5. Approve or reject the solution
-6. Save outcome to memory
+## Configuration
 
-## Project Structure
+Copy `.env.example` values into your environment as needed. Do not commit secrets.
 
-```
-ExceptionIQ/
+- `HOST` — server bind address
+- `PORT` — server port
+- `CORS_ORIGINS` — comma-separated allowed origins
+- `OPENAI_API_KEY` — optional placeholder for a future/live provider integration
+
+## Project structure
+
+```text
+ExceptionIQ-/
+├── .github/workflows/test.yml
+├── .env.example
 ├── frontend/
-│   ├── index.html          # Single-page frontend
-│   ├── App.js              # React application
-│   └── styles.css          # Styling
+│   ├── index.html
+│   ├── App.js
+│   └── styles.css
 ├── backend/
-│   ├── main.py             # FastAPI application
-│   ├── requirements.txt    # Python dependencies
-│   ├── api/
-│   │   └── routes.py       # API endpoints
-│   └── models/
-│       └── database.py     # Database models & operations
-├── data/
-│   ├── exceptions.db       # Exception records
-│   └── mock-hindsight.db   # Hindsight memories
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── api/routes.py
+│   ├── models/database.py
+│   └── tests/test_api.py
 └── README.md
 ```
 
-## File Locations
-- **Backend API**: `http://127.0.0.1:8000/api/`
-  - `GET /api/exceptions` - List all exceptions
-  - `POST /api/exceptions` - Create new exception
-  - `POST /api/investigate` - AI investigation
-  - `GET /api/memories` - List memories
-  - `POST /api/memories` - Save memory
+## Demo case
 
-## Demo Case
+A useful demo is:
 
-Try this exact scenario to see Hindsight in action:
-
-```
+```text
 Vendor: NovaTech Solutions
-Invoice: ₹1,08,000
-PO: ₹1,00,000
-Difference: ₹8,000
-Exception Type: Invoice Amount Mismatch
+Invoice amount: ₹106,500
+PO amount: ₹100,000
+Exception type: Invoice Amount Mismatch
 ```
 
-The system will find 2 similar NovaTech memories related to freight charges and provide an AI recommendation based on the pattern.
+The seeded memory includes a related ₹6,500 freight-charge case, allowing the investigation view to demonstrate similarity retrieval, evidence, confidence, approval and learning.
 
-## Future Enhancements (Not in Demo)
-- Real LLM API integration (Anthropic, OpenAI)
-- Hindsight API integration
-- User authentication
-- Advanced filtering & search
-- Analytics & reporting
-- Multi-tenant support
+## Important design principle
 
-## License
-For hackathon project demonstration only.
+ExceptionIQ is decision support, not autonomous financial approval. Recommendations should be reviewed against the invoice, purchase order, contract terms and supporting documents before action is taken.

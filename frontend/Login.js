@@ -51,13 +51,6 @@
           <article className="demo-feature"><span className="demo-feature-icon">◎</span><strong>Understand</strong><p>Surface historical patterns, supporting evidence and likely root causes.</p></article>
           <article className="demo-feature"><span className="demo-feature-icon">✓</span><strong>Resolve</strong><p>Recommend next actions and learn from human-approved outcomes.</p></article>
         </div>
-        <aside className="demo-sample-card" aria-label="Sample AI investigation">
-          <div className="demo-sample-top"><span className="demo-sample-label">Sample AI investigation</span><span className="demo-sample-badge">87% match</span></div>
-          <div className="demo-sample-title">Invoice amount mismatch</div>
-          <div className="demo-sample-row"><span>Vendor</span><strong>Electronics Pvt Ltd</strong></div>
-          <div className="demo-sample-row"><span>Evidence</span><strong>Historical memory found</strong></div>
-          <div className="demo-sample-row"><span>Decision</span><strong>Human approval required</strong></div>
-        </aside>
       </section>
 
       <section className="demo-auth-panel">
@@ -68,9 +61,9 @@
 
           <form onSubmit={submit}>
             {error&&<div className="demo-error" role="alert">{error}</div>}
-            <div className="demo-field"><label htmlFor="demo-user">Username / Work Email</label><div className="demo-input-wrap"><span className="demo-input-icon">✉</span><input id="demo-user" value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter your email address" autoComplete="off"/></div></div>
-            <div className="demo-field"><label htmlFor="demo-password">Password</label><div className="demo-input-wrap"><span className="demo-input-icon">⌑</span><input id="demo-password" type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" autoComplete="off"/><button type="button" className="demo-password-toggle" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?'◉':'◌'}</button></div></div>
-            <div className="demo-field"><label htmlFor="demo-customer">Customer ID / Organization ID</label><div className="demo-input-wrap"><span className="demo-input-icon">▦</span><input id="demo-customer" value={customerId} onChange={e=>setCustomerId(e.target.value)} placeholder="Enter your customer ID" autoComplete="off"/></div></div>
+            <div className="demo-field"><label htmlFor="demo-user">Username / Work Email</label><div className="demo-input-wrap"><span className="demo-input-icon">@</span><input id="demo-user" value={username} onChange={e=>setUsername(e.target.value)} placeholder="Enter your email address" autoComplete="off"/></div></div>
+            <div className="demo-field"><label htmlFor="demo-password">Password</label><div className="demo-input-wrap"><span className="demo-input-icon">•</span><input id="demo-password" type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} placeholder="Enter your password" autoComplete="off"/><button type="button" className="demo-password-toggle" aria-label={showPassword?'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>{showPassword?'Hide':'Show'}</button></div></div>
+            <div className="demo-field"><label htmlFor="demo-customer">Customer ID / Organization ID</label><div className="demo-input-wrap"><span className="demo-input-icon">#</span><input id="demo-customer" value={customerId} onChange={e=>setCustomerId(e.target.value)} placeholder="Enter your customer ID" autoComplete="off"/></div></div>
 
             <div className="demo-form-meta"><label className="demo-check"><input type="checkbox" defaultChecked/>Remember me</label><button className="demo-link" type="button" onClick={()=>setError('Password recovery is not available on this version.')}>Forgot password?</button></div>
 

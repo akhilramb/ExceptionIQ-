@@ -1,39 +1,46 @@
+import os
+from pathlib import Path
+
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
 from api.routes import router as api_router
 
-app = FastAPI(title="ExceptionIQ API")
+BASE_DIR = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 
-# CORS middleware
+app = FastAPI(
+    title="ExceptionIQ API",
+    description="AI-assisted financial exception investigation with organizational memory and human approval.",
+    version="1.0.0",
+)
+
+origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://127.0.0.1:8000,http://localhost:8000").split(",") if origin.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# Mount API router
 app.include_router(api_router, prefix="/api", tags=["api"])
-
-# Serve static files (frontend)
-frontend_dir = Path(__file__).parent.parent.parent / "frontend"
-if frontend_dir.exists():
-    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
 
 
 @app.get("/")
 def root():
-    """Serve the frontend"""
-    index_file = frontend_dir / "index.html"
+    index_file = FRONTEND_DIR / "index.html"
     if index_file.exists():
         return FileResponse(index_file)
-    return {"message": "ExceptionIQ API", "status": "running"}
+    return {"message": "ExceptionIQ API", "status": "running", "docs": "/docs"}
+
+
+if FRONTEND_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run("main:app", host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")), reload=False)
